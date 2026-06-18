@@ -1,4 +1,4 @@
-module github.com/nicshal/golang_2026_05/tree/master/hw01_hello_otus
+module github.com/nicshal/golang_2026_05/hw01_hello_otus
 
 go 1.23
 
