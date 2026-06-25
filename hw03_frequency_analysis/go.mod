@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw03_frequency_analysis
+module github.com/nicshal/golang_2026_05/hw03_frequency_analysis
 
 go 1.23
 
