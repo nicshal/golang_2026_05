@@ -1,3 +1,4 @@
+//go:build !bench
 // +build !bench
 
 package hw10programoptimization
@@ -35,5 +36,26 @@ func TestGetDomainStat(t *testing.T) {
 		result, err := GetDomainStat(bytes.NewBufferString(data), "unknown")
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
+	})
+}
+
+func TestGetDomainStatAdditional(t *testing.T) {
+	data := `{"Id":1,"Name":"Howard Mendoza","Username":"0Oliver","Email":"aliquid_qui_ea@Browsedrive.net","Phone":"6-866-899-36-79","Password":"InAQJvsq","Address":"Blackbird Place 25"}
+{"Id":2,"Name":"Jesse Vasquez","Username":"qRichardson","Email":"broWsecat.com@mLynch","Phone":"9-373-949-64-00","Password":"SiZLeNSGn","Address":"Fulton Hill 80"}
+{"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"RoseSmith@Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}
+{"Id":4,"Name":"Gregory Reid","Username":"tButler","Email":"5MooreTeklist.net","Phone":"520-04-16","Password":"r639qLNu","Address":"Sunfield Park 20"}
+{"Id":5,"Name":"Gregory Reid2","Username":"tButler2","Email":"","Phone":"520-04-16-2","Password":"r639qLNu2","Address":"Sunfield Park 202"}
+{"Id":6,"Name":"Janice Rose","Username":"KeithHart","Email":"Linktype.com@nulla","Phone":"146-91-01","Password":"acSBF5","Address":"Russell Trail 61"}`
+
+	t.Run("domain before @", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(data), "com")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{"browsecat.com": 1}, result)
+	})
+
+	t.Run("email not contain @", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(data), "net")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{"browsedrive.net": 1}, result)
 	})
 }
