@@ -1,10 +1,9 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
-	"fmt"
+	"bufio"
 	"io"
-	"regexp"
+	"log/slog"
 	"strings"
 )
 
@@ -21,45 +20,36 @@ type User struct {
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
-	if err != nil {
-		return nil, fmt.Errorf("get users error: %w", err)
-	}
-	return countDomains(u, domain)
+	return countDomain(r, domain)
 }
 
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return
-	}
-
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
-	}
-	return
-}
-
-func countDomains(u users, domain string) (DomainStat, error) {
+func countDomain(r io.Reader, domain string) (DomainStat, error) {
+	reader := bufio.NewReader(r)
 	result := make(DomainStat)
 
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
+	for {
+		line, err := reader.ReadSlice('\n')
+		if len(line) > 0 {
+			var user User
+			if err := user.UnmarshalJSON(line); err != nil {
+				return nil, err
+			}
+			addressParts := strings.SplitN(user.Email, "@", 2)
+			if len(addressParts) != 2 {
+				slog.Error("email not contain @:", "email", user.Email)
+				continue
+			}
+			fullDomain := strings.ToLower(addressParts[1])
+			if strings.Contains(fullDomain, "."+domain) {
+				result[fullDomain]++
+			}
 		}
 
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
 		}
 	}
 	return result, nil
