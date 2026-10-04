@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"log/slog"
+	"os"
 )
 
 var (
@@ -18,5 +20,16 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+
+	if from == "" || to == "" {
+		slog.Error("You must specify the paths to the source and target files")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	err := Copy(from, to, offset, limit)
+	if err != nil {
+		slog.Error("Copy error:", "error", err)
+		os.Exit(1)
+	}
 }
